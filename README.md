@@ -9,7 +9,7 @@ package main
 
 import (
 	"fmt" 
-	github.com/kirill-scherba/stable
+	"github.com/kirill-scherba/stable"
 )
 
 func main() {
@@ -25,10 +25,12 @@ func main() {
 		{"ququ-2", "ququ-2_name", 2, "ready", "2.2.2.2"},
 	}
 
-	st := new(Stable)
+	st := new(stable.Stable)
 	fmt.Print(st.StructToTable(a) + "\n\n")
 }
 ```
+
+Run in [The Go Playground](https://play.golang.org/p/D7csZ6AWHgw)
 
 ## License
 
