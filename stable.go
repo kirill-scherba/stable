@@ -11,15 +11,27 @@ import (
 	"strings"
 )
 
-type Stable struct{}
+type Stable struct {
+	lines     bool
+	aligns    []int
+	totals    []int
+	totalSPtr interface{}
+}
 
 // title return list title string
 func (t Stable) title(in interface{}, lens []int, aligns []int) (str string) {
 	val := reflect.Indirect(reflect.ValueOf(in))
 	l := val.NumField()
 	for i := 0; i < l; i++ {
-		s := fmt.Sprint(strings.ToUpper(val.Type().Field(i).Name)) + " "
-		str += fmt.Sprintf("%-*s", lens[i]+3, s)
+		s := fmt.Sprint(strings.ToUpper(val.Type().Field(i).Name)) // + " "
+		if len(aligns) > i && aligns[i] > 0 {
+			str += fmt.Sprintf("%*s", lens[i], s)
+		} else {
+			str += fmt.Sprintf("%-*s", lens[i], s)
+		}
+		if i < l-1 {
+			str += "   "
+		}
 	}
 	return
 }
@@ -31,9 +43,12 @@ func (t Stable) line(in interface{}, lens []int, aligns []int) (str string) {
 	for i := 0; i < l; i++ {
 		s := fmt.Sprint(val.Field(i))
 		if len(aligns) > i && aligns[i] > 0 {
-			str += fmt.Sprintf("%*s   ", lens[i], s)
+			str += fmt.Sprintf("%*s", lens[i], s)
 		} else {
-			str += fmt.Sprintf("%-*s", lens[i]+3, s)
+			str += fmt.Sprintf("%-*s", lens[i], s)
+		}
+		if i < l-1 {
+			str += "   "
 		}
 	}
 	return
@@ -66,7 +81,7 @@ func (t Stable) lineLens(in interface{}, lens []int) []int {
 }
 
 // lens calculate lists columns len
-func (t Stable) lens(in interface{}) (lens []int) {
+func (t Stable) lens(in interface{}) (lens []int, sumLen int) {
 	switch reflect.TypeOf(in).Kind() {
 	case reflect.Slice:
 		s := reflect.ValueOf(in)
@@ -79,26 +94,66 @@ func (t Stable) lens(in interface{}) (lens []int) {
 			}
 			lens = t.lineLens(s.Index(i).Interface(), lens)
 		}
+		for i := range lens {
+			sumLen += lens[i]
+		}
+		if len(lens) > 1 {
+			sumLen += (len(lens) - 1) * 3
+		}
 	}
 	return
 }
 
-// StructToTable convert structs slice to table string where aligns is colums
-// align array with values of 0 - 'align left' or 1 - 'align right'
-func (t Stable) StructToTable(in interface{}, aligns ...int) (str string) {
+// StructToTable convert structs slice to table string
+func (t Stable) StructToTable(in interface{}) (str string) {
 	switch reflect.TypeOf(in).Kind() {
 	case reflect.Slice:
 		s := reflect.ValueOf(in)
 		if s.Len() == 0 {
 			return
 		}
-		lens := t.lens(in)
+		lens, sumLen := t.lens(in)
+		line := func(l int, lineFeedLeft bool) (str string) {
+			if t.lines {
+				if lineFeedLeft {
+					str = "\n"
+				}
+				str += strings.Repeat("┈", l)
+				if !lineFeedLeft {
+					str += "\n"
+				}
+			}
+			return
+		}
 		for i := 0; i < s.Len(); i++ {
 			if i == 0 {
-				str += t.title(s.Index(i).Interface(), lens, aligns)
+				str += line(sumLen, false)
+				str += t.title(s.Index(i).Interface(), lens, t.aligns)
+				str += line(sumLen, true)
 			}
-			str += "\n" + t.line(s.Index(i).Interface(), lens, aligns)
+			str += "\n" + t.line(s.Index(i).Interface(), lens, t.aligns)
 		}
+		str += line(sumLen, true)
 	}
 	return
+}
+
+// Lines add lines to table
+func (t *Stable) Lines() *Stable {
+	t.lines = true
+	return t
+}
+
+// Aligns set align to colums. Align parameter is array with values of
+// 0 - 'align left' or 1 - 'align right'
+func (t *Stable) Aligns(aligns ...int) *Stable {
+	t.aligns = aligns
+	return t
+}
+
+// Totals add totals to table
+func (t *Stable) Totals(sptr interface{}, totals ...int) *Stable {
+	t.totals = totals
+	t.totalSPtr = sptr
+	return t
 }
