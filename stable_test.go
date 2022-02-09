@@ -21,18 +21,13 @@ func TestStructToTable(t *testing.T) {
 		{"ququ-2", "ququ-2_name", 2, 512.75, "not-ready", "22.2.2.2"},
 	}
 
-	s := new(Stable)
+	st := new(Stable)
 
-	// lens := structToListLens(a)
-	// aligns := []int{}
-	// fmt.Println(structToListTitle(a[0], lens, aligns))
-	// fmt.Println(structToListLine(a[0], lens, aligns))
+	// print default table
+	fmt.Print(st.StructToTable(a) + "\n\n")
 
-	// default
-	fmt.Print(s.StructToTable(a) + "\n\n")
-
-	// with column align and lines
+	// print table with columns align and lines
 	var totals table
-	s.Lines().Aligns(0, 0, 1, 1, 1, 1).Totals(&totals, 0, 0, 1)
-	fmt.Print(s.StructToTable(a) + "\n\n")
+	st.Lines().Aligns(0, 0, 1, 1, 1, 1).Totals(&totals, 0, 0, 1)
+	fmt.Print(st.StructToTable(a) + "\n\n")
 }
