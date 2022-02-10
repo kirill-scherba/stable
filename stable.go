@@ -205,10 +205,8 @@ func (t *Stable) Totals(sptr interface{}, totals ...int) *Stable {
 }
 
 // CleanLine set clean line terminal command before all table rows
-func (t *Stable) CleanLine(cl bool) *Stable {
-	if cl {
-		t.cleanLine = "\033[K"
-	}
+func (t *Stable) CleanLine() *Stable {
+	t.cleanLine = "\033[K"
 	return t
 }
 
