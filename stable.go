@@ -68,7 +68,7 @@ func (t Stable) totalAdd(i int, v reflect.Value) {
 	val := reflect.Indirect(reflect.ValueOf(t.totalSPtr))
 
 	switch val.Field(i).Kind() {
-	case reflect.Int, reflect.Int64:
+	case reflect.Int, reflect.Int64, reflect.Uint, reflect.Uint64:
 		tot := val.Field(i).Int() + v.Int()
 		val.Field(i).SetInt(tot)
 	case reflect.Float64, reflect.Float32:
