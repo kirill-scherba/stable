@@ -11,7 +11,7 @@ func TestStructToTable(t *testing.T) {
 	type table struct {
 		ID     string
 		Name   string
-		Num    int
+		Num    uint
 		Float  float64
 		Status string
 		IPv4   string
