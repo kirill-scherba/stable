@@ -2,6 +2,9 @@
 
 Stable create Simple Table string from struct
 
+[![GoDoc](https://godoc.org/github.com/kirill-scherba/stable?status.svg)](https://godoc.org/github.com/kirill-scherba/stable/)
+[![Go Report Card](https://goreportcard.com/badge/github.com/kirill-scherba/stable)](https://goreportcard.com/report/github.com/kirill-scherba/stable)
+
 ## Usage
 
 ```go
