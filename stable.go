@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"unicode/utf8"
 )
 
 type Stable struct {
@@ -108,7 +109,7 @@ func (t Stable) titleLens(in interface{}) (lens []int) {
 	val := reflect.Indirect(reflect.ValueOf(in))
 	l := val.NumField()
 	for i := 0; i < l; i++ {
-		lens = append(lens, len(fmt.Sprint(strings.ToUpper(val.Type().Field(i).Name))))
+		lens = append(lens, utf8.RuneCountInString(fmt.Sprint(strings.ToUpper(val.Type().Field(i).Name))))
 	}
 
 	return
@@ -119,7 +120,7 @@ func (t Stable) lineLens(in interface{}, lens []int) []int {
 	val := reflect.Indirect(reflect.ValueOf(in))
 	l := val.NumField()
 	for i := 0; i < l; i++ {
-		ln := len(fmt.Sprintf(t.getFormat(i), val.Field(i)))
+		ln := utf8.RuneCountInString(fmt.Sprintf(t.getFormat(i), val.Field(i)))
 		if ln > lens[i] {
 			lens[i] = ln
 		}
