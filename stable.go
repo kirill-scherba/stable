@@ -16,18 +16,22 @@ type Stable struct {
 	lines     bool
 	aligns    []int
 	totals    []int
-	totalSPtr interface{}
+	totalSPtr any
 	cleanLine string
 	formats   []string
 }
 
 // title return list title string
-func (t Stable) title(in interface{}, lens []int) (str string) {
+func (t Stable) title(in any, lens []int) (str string) {
 	val := reflect.Indirect(reflect.ValueOf(in))
 	l := val.NumField()
 	str = t.cleanLine
-	for i := 0; i < l; i++ {
-		s := fmt.Sprint(strings.ToUpper(val.Type().Field(i).Name))
+	for i := range l {
+		s := val.Type().Field(i).Tag.Get("stable")
+		if s == "" {
+			s = val.Type().Field(i).Name
+		}
+		s = strings.ToUpper(s)
 		if len(t.aligns) > i && t.aligns[i] > 0 {
 			str += fmt.Sprintf("%*s", lens[i], s)
 		} else {
@@ -41,11 +45,11 @@ func (t Stable) title(in interface{}, lens []int) (str string) {
 }
 
 // line return list body string
-func (t Stable) line(in interface{}, lens []int) (str string) {
+func (t Stable) line(in any, lens []int) (str string) {
 	val := reflect.Indirect(reflect.ValueOf(in))
 	l := val.NumField()
 	str = t.cleanLine
-	for i := 0; i < l; i++ {
+	for i := range l {
 		s := fmt.Sprintf(t.getFormat(i), val.Field(i))
 		if len(t.aligns) > i && t.aligns[i] > 0 {
 			str += fmt.Sprintf("%*s", lens[i], s)
@@ -103,25 +107,29 @@ func (t Stable) total(lens []int) (str string) {
 }
 
 // titleLens calculate lists title columns len
-func (t Stable) titleLens(in interface{}) (lens []int) {
+func (t Stable) titleLens(in any) (lens []int) {
 
 	// Calculate titles length
 	val := reflect.Indirect(reflect.ValueOf(in))
 	l := val.NumField()
-	for i := 0; i < l; i++ {
-		lens = append(lens, utf8.RuneCountInString(fmt.Sprint(strings.ToUpper(val.Type().Field(i).Name))))
+	for i := range l {
+		name := val.Type().Field(i).Tag.Get("stable")
+		if name == "" {
+			name = val.Type().Field(i).Name
+		}
+		lens = append(lens, utf8.RuneCountInString(strings.ToUpper(name)))
 	}
 
 	return
 }
 
 // lineLens calculate lists line columns len
-func (t Stable) lineLens(in interface{}, lens []int) []int {
+func (t Stable) lineLens(in any, lens []int) []int {
 	val := reflect.Indirect(reflect.ValueOf(in))
 	l := val.NumField()
-	for i := 0; i < l; i++ {
+	for i := range l {
 		ln := utf8.RuneCountInString(fmt.Sprintf(t.getFormat(i), val.Field(i)))
-		if ln > lens[i] {
+		if i < len(lens) && ln > lens[i] {
 			lens[i] = ln
 		}
 	}
@@ -129,7 +137,7 @@ func (t Stable) lineLens(in interface{}, lens []int) []int {
 }
 
 // lens calculate lists columns len
-func (t Stable) lens(in interface{}) (lens []int, sumLen int) {
+func (t Stable) lens(in any) (lens []int, sumLen int) {
 	switch reflect.TypeOf(in).Kind() {
 	case reflect.Slice:
 		s := reflect.ValueOf(in)
@@ -153,7 +161,7 @@ func (t Stable) lens(in interface{}) (lens []int, sumLen int) {
 }
 
 // StructToTable convert structs slice to table string
-func (t Stable) StructToTable(in interface{}) (str string) {
+func (t Stable) StructToTable(in any) (str string) {
 	switch reflect.TypeOf(in).Kind() {
 	case reflect.Slice:
 		s := reflect.ValueOf(in)
@@ -202,7 +210,7 @@ func (t *Stable) Aligns(aligns ...int) *Stable {
 }
 
 // Totals add totals to table
-func (t *Stable) Totals(sptr interface{}, totals ...int) *Stable {
+func (t *Stable) Totals(sptr any, totals ...int) *Stable {
 	t.totals = totals
 	t.totalSPtr = sptr
 	return t
