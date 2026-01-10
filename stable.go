@@ -12,6 +12,11 @@ import (
 	"unicode/utf8"
 )
 
+const (
+	Left  = 0
+	Right = 1
+)
+
 type Stable struct {
 	lines     bool
 	aligns    []int
